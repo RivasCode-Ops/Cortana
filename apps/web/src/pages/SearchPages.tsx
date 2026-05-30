@@ -112,6 +112,17 @@ export function ResultsPage() {
           {detail.results.slice(0, 15).map((r) => (
             <li key={r.id}>
               {r.selected ? '★ ' : ''}
+              {r.result_category === 'images' && <span className="badge">img </span>}
+              {r.img_src && (
+                <img
+                  src={r.img_src}
+                  alt=""
+                  width={48}
+                  height={48}
+                  style={{ verticalAlign: 'middle', marginRight: 8, objectFit: 'cover', borderRadius: 4 }}
+                  loading="lazy"
+                />
+              )}
               <a href={r.url} target="_blank" rel="noreferrer">
                 {r.title}
               </a>

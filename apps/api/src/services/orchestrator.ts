@@ -12,6 +12,7 @@ import {
   synthesizeReport,
 } from './llm.js';
 import { searchSearxng } from './searxng.js';
+import { imageIdFromSrc, pickImageSrc, shouldUseImageSearch } from './image.js';
 
 type ProgressCb = (p: SearchProgress) => void;
 
@@ -61,8 +62,8 @@ export async function runSearchPipeline(
 
     onProgress?.({ phase: 'search', message: 'Consultando SearXNG...', percent: 35 });
     const insertResult = db.prepare(
-      `INSERT INTO search_results (id, search_id, query_id, title, url, snippet, engine, score, selected)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO search_results (id, search_id, query_id, title, url, snippet, engine, score, selected, img_src, image_id, result_category)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     const allResults: {
@@ -71,31 +72,43 @@ export async function runSearchPipeline(
       title: string;
       snippet: string;
       score: number;
+      img_src?: string | null;
     }[] = [];
     const seenUrls = new Set<string>();
+    const seenImageIds = new Set<string>();
 
-    for (const q of queryRows) {
-      const results = await searchSearxng(q.text, settings);
+    const ingestBatch = (
+      results: Awaited<ReturnType<typeof searchSearxng>>,
+      queryId: string,
+      queryText: string,
+      category: string
+    ) => {
       for (const r of results.slice(0, settings.maxResults)) {
         if (!r.url || seenUrls.has(r.url)) continue;
+        const imgSrc = pickImageSrc(r);
+        const imageId = imgSrc ? imageIdFromSrc(imgSrc) : null;
+        if (imageId && seenImageIds.has(imageId)) continue;
+
         seenUrls.add(r.url);
-        const score = scoreResult(
-          r.title ?? '',
-          r.content ?? '',
-          search.demand,
-          q.text
-        );
+        if (imageId) seenImageIds.add(imageId);
+
+        let score = scoreResult(r.title ?? '', r.content ?? '', search.demand, queryText);
+        if (category === 'images' && imgSrc) score += 1.5;
+
         const id = uuid();
         insertResult.run(
           id,
           searchId,
-          q.id,
+          queryId,
           r.title ?? r.url,
           r.url,
           r.content ?? '',
           r.engine ?? '',
           score,
-          0
+          0,
+          imgSrc,
+          imageId,
+          category
         );
         allResults.push({
           id,
@@ -103,7 +116,18 @@ export async function runSearchPipeline(
           title: r.title ?? r.url,
           snippet: r.content ?? '',
           score,
+          img_src: imgSrc,
         });
+      }
+    };
+
+    for (const q of queryRows) {
+      const general = await searchSearxng(q.text, settings);
+      ingestBatch(general, q.id, q.text, 'general');
+
+      if (shouldUseImageSearch(searchType)) {
+        const images = await searchSearxng(q.text, settings, { categories: 'images' });
+        ingestBatch(images, q.id, q.text, 'images');
       }
     }
 

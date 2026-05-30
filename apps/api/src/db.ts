@@ -58,6 +58,9 @@ export function initDb(): void {
       engine TEXT NOT NULL DEFAULT '',
       score REAL NOT NULL DEFAULT 0,
       selected INTEGER NOT NULL DEFAULT 0,
+      img_src TEXT,
+      image_id TEXT,
+      result_category TEXT NOT NULL DEFAULT 'general',
       FOREIGN KEY (search_id) REFERENCES searches(id) ON DELETE CASCADE,
       FOREIGN KEY (query_id) REFERENCES search_queries(id) ON DELETE CASCADE
     );
@@ -95,6 +98,25 @@ export function initDb(): void {
   );
   for (const [key, value] of Object.entries(DEFAULTS)) {
     insertSetting.run(key, String(value));
+  }
+
+  migrateSearchResultsColumns();
+}
+
+function migrateSearchResultsColumns(): void {
+  const cols = db.prepare('PRAGMA table_info(search_results)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  const add = (sql: string) => {
+    try {
+      db.exec(sql);
+    } catch {
+      /* already exists */
+    }
+  };
+  if (!names.has('img_src')) add('ALTER TABLE search_results ADD COLUMN img_src TEXT');
+  if (!names.has('image_id')) add('ALTER TABLE search_results ADD COLUMN image_id TEXT');
+  if (!names.has('result_category')) {
+    add("ALTER TABLE search_results ADD COLUMN result_category TEXT NOT NULL DEFAULT 'general'");
   }
 }
 

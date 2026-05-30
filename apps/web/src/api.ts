@@ -26,6 +26,8 @@ export interface SearchDetail {
     snippet: string;
     score: number;
     selected: number;
+    img_src?: string | null;
+    result_category?: string;
   }[];
   extracts: {
     id: string;

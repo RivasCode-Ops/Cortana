@@ -50,6 +50,9 @@ export interface SearchResultRow {
   engine: string;
   score: number;
   selected: number;
+  img_src: string | null;
+  image_id: string | null;
+  result_category: string;
 }
 
 export interface SourceExtractRow {
@@ -86,6 +89,15 @@ export interface SearxResult {
   url: string;
   content?: string;
   engine?: string;
+  img_src?: string;
+  thumbnail_src?: string;
+  template?: string;
+  resolution?: string;
+  img_format?: string;
+}
+
+export interface SearxSearchOptions {
+  categories?: string;
 }
 
 export interface SearchProgress {

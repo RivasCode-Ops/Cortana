@@ -1,14 +1,18 @@
-import type { AppSettings, SearxResult } from '../types.js';
+import type { AppSettings, SearxResult, SearxSearchOptions } from '../types.js';
 
 export async function searchSearxng(
   query: string,
-  settings: AppSettings
+  settings: AppSettings,
+  options: SearxSearchOptions = {}
 ): Promise<SearxResult[]> {
   const base = settings.searxngUrl.replace(/\/$/, '');
   const url = new URL(`${base}/search`);
   url.searchParams.set('q', query);
   url.searchParams.set('format', 'json');
   url.searchParams.set('language', 'pt-BR');
+  if (options.categories) {
+    url.searchParams.set('categories', options.categories);
+  }
 
   const res = await fetch(url.toString(), {
     headers: { Accept: 'application/json' },
