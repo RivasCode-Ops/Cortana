@@ -1,7 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { cortanaApi, type SearchDetail } from '../api';
+import { cortanaApi, OUTPUT_LABELS, type SearchDetail } from '../api';
+
+function buildExportMarkdown(
+  detail: SearchDetail,
+  sources: { title: string; url: string }[]
+): string {
+  const lines = [
+    `# Cortana — ${OUTPUT_LABELS[detail.search.output_type]}`,
+    '',
+    `**Demanda:** ${detail.search.demand}`,
+    '',
+    `**Data:** ${new Date(detail.search.created_at).toLocaleString('pt-BR')}`,
+    '',
+    '---',
+    '',
+  ];
+  if (detail.report) {
+    lines.push(detail.report.content, '', '---', '', '## Fontes', '');
+    sources.forEach((s, i) => lines.push(`${i + 1}. [${s.title}](${s.url})`));
+  }
+  return lines.join('\n');
+}
 
 export function SearchRunPage() {
   const { id } = useParams<{ id: string }>();
@@ -77,7 +98,7 @@ export function SearchRunPage() {
         )}
         {error && id && (
           <Link to={`/results/${id}`} style={{ display: 'inline-block', marginTop: 12 }}>
-            Ver partial
+            Ver resultados parciais
           </Link>
         )}
       </div>
@@ -89,6 +110,8 @@ export function ResultsPage() {
   const { id } = useParams<{ id: string }>();
   const [detail, setDetail] = useState<SearchDetail | null>(null);
   const [refine, setRefine] = useState('');
+  const [refineError, setRefineError] = useState<string | null>(null);
+  const [copyMsg, setCopyMsg] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -98,8 +121,35 @@ export function ResultsPage() {
 
   async function handleRefine() {
     if (!id || !refine.trim()) return;
-    const { id: newId } = await cortanaApi.refineSearch(id, refine.trim());
-    navigate(`/search/${newId}`);
+    setRefineError(null);
+    try {
+      const { id: newId } = await cortanaApi.refineSearch(id, refine.trim());
+      navigate(`/search/${newId}`);
+    } catch (err) {
+      setRefineError(err instanceof Error ? err.message : 'Erro ao refinar');
+    }
+  }
+
+  function downloadReport() {
+    if (!detail) return;
+    const sources = detail.report
+      ? (JSON.parse(detail.report.sources_json) as { title: string; url: string }[])
+      : [];
+    const md = buildExportMarkdown(detail, sources);
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `cortana-${detail.search.id.slice(0, 8)}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function copyReport() {
+    if (!detail?.report) return;
+    const sources = JSON.parse(detail.report.sources_json) as { title: string; url: string }[];
+    await navigator.clipboard.writeText(buildExportMarkdown(detail, sources));
+    setCopyMsg('Copiado!');
+    setTimeout(() => setCopyMsg(null), 2000);
   }
 
   if (!detail) return <p className="muted">Carregando...</p>;
@@ -162,7 +212,18 @@ export function ResultsPage() {
 
       {detail.report && (
         <div className="card">
-          <h2>Síntese final</h2>
+          <div className="btn-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0 }}>Síntese final</h2>
+            <div className="btn-row">
+              <button type="button" className="secondary" onClick={copyReport}>
+                Copiar
+              </button>
+              <button type="button" className="secondary" onClick={downloadReport}>
+                Baixar .md
+              </button>
+            </div>
+          </div>
+          {copyMsg && <p className="success">{copyMsg}</p>}
           <div className="markdown">
             <ReactMarkdown>{detail.report.content}</ReactMarkdown>
           </div>
@@ -189,6 +250,7 @@ export function ResultsPage() {
         <button type="button" onClick={handleRefine} style={{ marginTop: 8 }}>
           Refinar e pesquisar de novo
         </button>
+        {refineError && <p className="error">{refineError}</p>}
       </div>
     </>
   );

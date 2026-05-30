@@ -99,4 +99,9 @@ export const cortanaApi = {
     api<{ searxng: boolean; llmConfigured: boolean; searxngUrl: string }>(
       '/api/settings/health'
     ),
+  testLlm: (data?: Partial<Pick<AppSettings, 'llmBaseUrl' | 'llmModel' | 'llmApiKey'>>) =>
+    api<{ ok: boolean; message: string }>('/api/settings/test-llm', {
+      method: 'POST',
+      body: JSON.stringify(data ?? {}),
+    }),
 };

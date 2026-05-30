@@ -40,6 +40,27 @@ export async function chatCompletion(
   return data.choices?.[0]?.message?.content?.trim() ?? '';
 }
 
+export async function testLlmConnection(
+  settings: AppSettings
+): Promise<{ ok: boolean; message: string }> {
+  if (!settings.llmApiKey) {
+    return { ok: false, message: 'Configure a chave da IA antes de testar.' };
+  }
+  try {
+    const reply = await chatCompletion(
+      settings,
+      [{ role: 'user', content: 'Responda em uma palavra: OK' }],
+      0
+    );
+    return { ok: true, message: `Conexão OK — resposta: ${reply.slice(0, 80)}` };
+  } catch (err) {
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : 'Falha ao conectar na IA',
+    };
+  }
+}
+
 export function classifyDemandHeuristic(demand: string): SearchType {
   const d = demand.toLowerCase();
   if (/fornecedor|revenda|distribuidor|atacado/.test(d)) return 'suppliers';

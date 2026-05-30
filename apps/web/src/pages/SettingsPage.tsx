@@ -6,6 +6,8 @@ export function SettingsPage() {
   const [health, setHealth] = useState<{ searxng: boolean; llmConfigured: boolean } | null>(null);
   const [saved, setSaved] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [llmTest, setLlmTest] = useState<{ ok: boolean; message: string } | null>(null);
+  const [testingLlm, setTestingLlm] = useState(false);
 
   useEffect(() => {
     cortanaApi.getSettings().then(setSettings);
@@ -23,6 +25,28 @@ export function SettingsPage() {
     setApiKey('');
     cortanaApi.settingsHealth().then(setHealth);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function testLlm() {
+    if (!settings) return;
+    setTestingLlm(true);
+    setLlmTest(null);
+    try {
+      const payload: Partial<AppSettings> = {
+        llmBaseUrl: settings.llmBaseUrl,
+        llmModel: settings.llmModel,
+      };
+      if (apiKey) payload.llmApiKey = apiKey;
+      const result = await cortanaApi.testLlm(payload);
+      setLlmTest(result);
+    } catch (err) {
+      setLlmTest({
+        ok: false,
+        message: err instanceof Error ? err.message : 'Erro ao testar IA',
+      });
+    } finally {
+      setTestingLlm(false);
+    }
   }
 
   if (!settings) return <p className="muted">Carregando...</p>;
@@ -108,9 +132,17 @@ export function SettingsPage() {
             </select>
           </label>
         </div>
-        <button type="submit" style={{ marginTop: '1rem' }}>
-          {saved ? 'Salvo!' : 'Salvar'}
-        </button>
+        <div className="btn-row" style={{ marginTop: '1rem' }}>
+          <button type="submit">{saved ? 'Salvo!' : 'Salvar'}</button>
+          <button type="button" className="secondary" disabled={testingLlm} onClick={testLlm}>
+            {testingLlm ? 'Testando...' : 'Testar conexão IA'}
+          </button>
+        </div>
+        {llmTest && (
+          <p className={llmTest.ok ? 'success' : 'error'} style={{ marginTop: 12 }}>
+            {llmTest.message}
+          </p>
+        )}
       </form>
     </>
   );

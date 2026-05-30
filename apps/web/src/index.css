@@ -58,6 +58,8 @@ button, .btn {
 }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 button.secondary { background: #334155; }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.success { color: #86efac; font-size: 0.9rem; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
 .badge {

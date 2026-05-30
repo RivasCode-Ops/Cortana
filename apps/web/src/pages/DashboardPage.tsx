@@ -14,6 +14,7 @@ export function DashboardPage() {
   const [demand, setDemand] = useState('');
   const [outputType, setOutputType] = useState<OutputType>('summary');
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [health, setHealth] = useState<{ searxng: boolean; llm: boolean } | null>(null);
   const navigate = useNavigate();
 
@@ -27,11 +28,12 @@ export function DashboardPage() {
     e.preventDefault();
     if (!demand.trim()) return;
     setLoading(true);
+    setSubmitError(null);
     try {
       const { id } = await cortanaApi.createSearch(demand.trim(), outputType);
       navigate(`/search/${id}`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao iniciar pesquisa');
+      setSubmitError(err instanceof Error ? err.message : 'Erro ao iniciar pesquisa');
     } finally {
       setLoading(false);
     }
@@ -85,6 +87,7 @@ export function DashboardPage() {
         <button type="submit" disabled={loading || !demand.trim()} style={{ marginTop: '1rem' }}>
           {loading ? 'Iniciando...' : 'Pesquisar'}
         </button>
+        {submitError && <p className="error" style={{ marginTop: 12 }}>{submitError}</p>}
       </form>
 
       <div className="card">
