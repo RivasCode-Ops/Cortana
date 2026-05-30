@@ -1,0 +1,20 @@
+{
+  "name": "cortana",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pesquisa inteligente local: SearXNG + IA + histórico",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @cortana/api\" \"npm run dev -w @cortana/web\"",
+    "dev:api": "npm run dev -w @cortana/api",
+    "dev:web": "npm run dev -w @cortana/web",
+    "build": "npm run build -w @cortana/api && npm run build -w @cortana/web",
+    "start": "npm run start -w @cortana/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

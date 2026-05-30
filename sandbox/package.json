@@ -1,0 +1,8 @@
+{
+  "name": "cortana-sandbox",
+  "private": true,
+  "description": "Projeto de validacao do ambiente dev",
+  "scripts": {
+    "check": "node check_env.js"
+  }
+}

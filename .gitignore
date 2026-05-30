@@ -1,0 +1,12 @@
+node_modules/
+dist/
+apps/data/
+apps/api/data/
+.env
+*.db
+*.log
+.DS_Store
+Thumbs.db
+__pycache__/
+.venv/
+sandbox/node_modules/

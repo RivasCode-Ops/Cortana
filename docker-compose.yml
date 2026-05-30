@@ -1,0 +1,15 @@
+# SearXNG local para a Cortana (opcional — requer Docker)
+# Uso: docker compose up -d
+# URL padrão na Cortana: http://127.0.0.1:8080
+
+services:
+  searxng:
+    image: searxng/searxng:latest
+    container_name: cortana-searxng
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://127.0.0.1:8080/
+    restart: unless-stopped

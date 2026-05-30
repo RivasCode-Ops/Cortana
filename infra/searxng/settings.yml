@@ -1,0 +1,14 @@
+use_default_settings: true
+
+server:
+  secret_key: "cortana-local-dev-change-me"
+  limiter: false
+  image_proxy: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "pt-BR"
+  formats:
+    - html
+    - json

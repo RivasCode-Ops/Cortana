@@ -1,0 +1,92 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0b1020;
+  color: #e8ecf4;
+  min-height: 100vh;
+}
+a { color: #7eb8ff; }
+.layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 3rem;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 0 1.5rem;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 1.5rem;
+}
+nav a {
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+nav a.active, nav a:hover, nav a[aria-current="page"] { color: #fff; }
+.brand { font-weight: 700; color: #60a5fa !important; margin-right: auto; }
+.card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+h1 { font-size: 1.6rem; margin: 0 0 0.5rem; }
+h2 { font-size: 1.1rem; margin: 0 0 0.75rem; color: #cbd5e1; }
+.muted { color: #94a3b8; font-size: 0.9rem; }
+textarea, input, select {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+}
+textarea { min-height: 120px; resize: vertical; }
+button, .btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.secondary { background: #334155; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+.progress-bar {
+  height: 8px;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.75rem 0;
+}
+.progress-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  transition: width 0.3s;
+}
+.link-list { list-style: none; padding: 0; margin: 0; }
+.link-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #1e293b;
+}
+.link-list a { font-weight: 500; }
+.error { color: #fca5a5; }
+.markdown { line-height: 1.6; }
+.markdown h1, .markdown h2, .markdown h3 { color: #e2e8f0; }
+.markdown p { color: #cbd5e1; }
