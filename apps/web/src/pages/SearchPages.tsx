@@ -53,7 +53,23 @@ export function SearchRunPage() {
           <div style={{ width: `${Math.max(progress.percent, 5)}%` }} />
         </div>
         <span className="badge">{progress.status}</span>
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <div className="card" style={{ marginTop: 12, borderColor: '#7f1d1d' }}>
+            <p className="error">{error}</p>
+            {error.includes('SearXNG') && (
+              <p className="muted">
+                1. Abra o <strong>Docker Desktop</strong>
+                <br />
+                2. No terminal: <code>docker compose up -d</code> (pasta Cortana)
+                <br />
+                3. Aguarde ~30s e pesquise de novo
+              </p>
+            )}
+            {!error.includes('SearXNG') && error.includes('IA') && (
+              <p className="muted">Configure a chave de IA em Configurações para síntese completa.</p>
+            )}
+          </div>
+        )}
         {detail && (
           <p className="muted" style={{ marginTop: 12 }}>
             Demanda: {detail.search.demand}

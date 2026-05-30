@@ -1,5 +1,12 @@
 import type { AppSettings, SearxResult, SearxSearchOptions } from '../types.js';
 
+export class SearxngError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SearxngError';
+  }
+}
+
 export async function searchSearxng(
   query: string,
   settings: AppSettings,
@@ -14,13 +21,20 @@ export async function searchSearxng(
     url.searchParams.set('categories', options.categories);
   }
 
-  const res = await fetch(url.toString(), {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(15000),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    throw new SearxngError(
+      `SearXNG offline em ${base}. Inicie o Docker Desktop e rode: docker compose up -d`
+    );
+  }
 
   if (!res.ok) {
-    throw new Error(`SearXNG respondeu ${res.status}. Verifique se está rodando em ${base}`);
+    throw new SearxngError(`SearXNG respondeu ${res.status}. Verifique ${base}`);
   }
 
   const data = (await res.json()) as { results?: SearxResult[] };

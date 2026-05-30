@@ -11,7 +11,7 @@ import {
   generateQueriesWithLlm,
   synthesizeReport,
 } from './llm.js';
-import { searchSearxng } from './searxng.js';
+import { searchSearxng, pingSearxng } from './searxng.js';
 import { imageIdFromSrc, pickImageSrc, shouldUseImageSearch } from './image.js';
 
 type ProgressCb = (p: SearchProgress) => void;
@@ -40,6 +40,13 @@ export async function runSearchPipeline(
   try {
     onProgress?.({ phase: 'classify', message: 'Classificando demanda...', percent: 10 });
     updateStatus('running');
+
+    const searxOk = await pingSearxng(settings);
+    if (!searxOk) {
+      throw new Error(
+        `SearXNG offline (${settings.searxngUrl}). Abra o Docker Desktop e execute: docker compose up -d`
+      );
+    }
 
     const searchType: SearchType = classifyDemandHeuristic(search.demand);
     db.prepare('UPDATE searches SET search_type = ? WHERE id = ?').run(

@@ -46,12 +46,40 @@ export function classifyDemandHeuristic(demand: string): SearchType {
   if (/compar| versus | vs |melhor entre/.test(d)) return 'comparison';
   if (/proposta comercial|briefing|cliente/.test(d)) return 'commercial_proposal';
   if (/app|aplicativo|software|sistema open source/.test(d)) return 'app_references';
+  if (/leil[aã]o|ve[ií]culo|autom[oó]vel|carro|onix|detran|tomado|apreendid|financiamento/.test(d)) {
+    return 'market_research';
+  }
   if (/máquina|equipamento|investimento|mercado/.test(d)) return 'market_research';
   return 'general';
 }
 
+/** Primeira linha / trecho antes de "Refinamento:" — evita queries gigantes no SearXNG. */
+export function extractDemandCore(demand: string): string {
+  const line = demand.split(/\n+/)[0]?.trim() ?? demand.trim();
+  const beforeRefine = line.split(/refinamento\s*:/i)[0]?.trim() ?? line;
+  return beforeRefine.slice(0, 200);
+}
+
+function auctionQueries(demand: string): string[] {
+  const core = extractDemandCore(demand);
+  const d = demand.toLowerCase();
+  const model = /\bonix\b/i.test(d) ? 'Onix 2025' : 'veículo';
+  return [
+    `${model} leilão banco apreensão Brasil`,
+    `leilão ${model} DETRAN financiamento`,
+    `como encontrar ${model} antes leilão banco`,
+    `${core} site:gov.br OR site:com.br leilão`,
+  ].map((q) => q.slice(0, 120));
+}
+
 export function generateQueriesHeuristic(demand: string, searchType: SearchType): string[] {
-  const base = demand.trim();
+  const base = extractDemandCore(demand);
+  const d = demand.toLowerCase();
+
+  if (/leil[aã]o|detran|tomado|apreendid|financiamento/.test(d)) {
+    return auctionQueries(demand);
+  }
+
   const extras: Record<SearchType, string[]> = {
     suppliers: [
       `${base} fornecedor Brasil`,
