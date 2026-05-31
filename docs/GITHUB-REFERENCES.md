@@ -1,4 +1,7 @@
-# Referências GitHub — rodada Cortana (2026-05-30)
+# Referências GitHub — Cortana
+
+> **Índice ecossistema:** [workbench](https://github.com/RivasCode-Ops/workbench/blob/main/docs/GITHUB-INSPIRACOES-ECOSSISTEMA.md)  
+> **Atualizado:** 2026-05-30
 
 ## Repos analisados
 
